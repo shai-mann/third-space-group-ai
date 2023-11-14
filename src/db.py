@@ -11,19 +11,19 @@ class Database():
     """
 
     def getUsers(self):
-        raise Exception()
+        pass
     
     def getHobbies(self):
-        raise Exception()
+        pass
     
     def getUserHobbies(self):
-        raise Exception()
+        pass
     
     def getUserFriends(self):
-        raise Exception()
+        pass
     
     def getGroups(self):
-        raise Exception()
+        pass
     
     def getGroupMembers(self):
-        raise Exception()
+        pass
