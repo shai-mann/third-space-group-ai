@@ -22,21 +22,6 @@ def connect_db():
         print(f"Error connecting to the database: {e}")
         return None
 
-def execute_query(query, args=None):
-    conn = connect_db()
-    if conn:
-        try:
-            with conn.cursor() as cur:
-                cur.execute(query, args)
-                if cur.description:  # Check if it's a SELECT query
-                    return cur.fetchall()
-                conn.commit()
-        except Exception as e:
-            print(f"Error executing query: {e}")
-        finally:
-            conn.close()
-    return None
-
 def main():
     # Connect to the database
     conn = connect_db()
