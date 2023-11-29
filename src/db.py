@@ -45,6 +45,53 @@ def execute_query(query, args=None):
             conn.close()
     return None
 
+def initialize_database():
+    conn = connect_db()
+    if conn:
+        try:
+            # First, drop existing tables to reset the database
+            execute_sql_file(conn, 'src/postgres/drop-db.sql')
+            # Assuming 'execute_sql_file' is a function that takes a connection
+            # and the path to an SQL file, and executes the SQL commands in the file.
+            execute_sql_file(conn, 'src/postgres/schema.sql')
+            database = Database()
+            users = database.getUsers()
+            hobbies = database.getHobbies()
+            users_id = database.getUsersIds()
+
+            for user in users:
+                print(user)
+            
+                
+
+            for hobby in hobbies:
+                print(hobby)
+            
+            
+            print("Database initialized successfully.")
+
+            for user_id in users_id:
+                print(user_id[0])
+                
+        except Exception as e:
+            print(f"Error initializing the database: {e}")
+        finally:
+            conn.close()
+    else:
+        print("Failed to connect to the database.")
+
+# Function to execute SQL file
+def execute_sql_file(conn, filepath):
+    with open(filepath, 'r') as file:
+        sql_script = file.read()
+    try:
+        with conn.cursor() as cur:
+            cur.execute(sql_script)
+            conn.commit()
+    except Exception as e:
+        conn.rollback()  # Rollback the transaction on error
+        print(f"Error executing SQL script: {e}")
+        raise e
 
 class Database():
     """
@@ -55,16 +102,38 @@ class Database():
     """
 
     def getUsers(self):
-        pass
+        query = "SELECT * FROM users;"
+        return execute_query(query)
+    
+
+    def getUsersIds(self):
+        query = "SELECT id FROM users;"
+        return execute_query(query)
     
     def getHobbies(self):
-        pass
+        query = "SELECT * FROM hobbies;"
+        return execute_query(query)
+
     
-    def getUserHobbies(self):
-        pass
+    def getUserHobbies(self, user_id):
+        query = """
+        SELECT h.*
+        FROM hobbies h
+        JOIN user_hobbies uh ON h.id = uh.hobby
+        WHERE uh."user" = %s;
+        """
+        return execute_query(query, (user_id,))
+
     
-    def getUserFriends(self):
-        pass
+    def getUserFriends(self, user_id):
+        query = """
+        SELECT u.*
+        FROM users u
+        JOIN user_friends uf ON u.id = uf.friend
+        WHERE uf."user" = %s;
+        """
+        return execute_query(query, (user_id,))
+
     
     def getGroups(self):
         pass
