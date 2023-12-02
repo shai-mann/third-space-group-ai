@@ -61,8 +61,6 @@ def initialize_database():
 
             for user in users:
                 print(user)
-            
-                
 
             for hobby in hobbies:
                 print(hobby)
@@ -133,8 +131,36 @@ class Database():
         WHERE uf."user" = %s;
         """
         return execute_query(query, (user_id,))
-
     
+    def determine_affinity(self, relationship):
+        """Determine the affinity score based on the relationship."""
+        affinity_scores = {
+            "not friends": 0,
+            "friends": 50,
+            "buddies": 100
+        }
+        return affinity_scores.get(relationship, None)
+
+    def set_user_affinity(self, user_id, related_user_id, relationship):
+        """Insert or update the affinity score between two users."""
+        affinity_score = self.determine_affinity(relationship)
+        if affinity_score is not None:
+            query = """
+            INSERT INTO user_affinities (user_id, related_user_id, affinity_score)
+            VALUES (%s, %s, %s)
+            ON CONFLICT (user_id, related_user_id) DO UPDATE SET affinity_score = EXCLUDED.affinity_score;
+            """
+            execute_query(query, (user_id, related_user_id, affinity_score))
+        else:
+            print("Invalid relationship type provided.")
+        
+    # Inside the Database class in db.py
+
+    def get_user_id_by_email(self, email):
+        query = "SELECT id FROM users WHERE email = %s;"
+        result = execute_query(query, (email,))
+        return result[0][0] if result else None
+
     def getGroups(self):
         pass
     

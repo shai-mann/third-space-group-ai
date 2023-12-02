@@ -6,5 +6,6 @@ drop table if exists groups;
 
 drop table if exists user_hobbies;
 drop table if exists user_friends;
+drop table if exists user_affinities;
 drop table if exists users;
 drop table if exists hobbies;
