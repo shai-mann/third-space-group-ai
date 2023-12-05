@@ -7,7 +7,7 @@ from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 import os
 from dotenv import load_dotenv
 
-dotenv_path = os.path.join(os.path.dirname(__file__), "..",'.env.dev')
+dotenv_path = os.path.join(os.path.dirname(__file__), "..",'.env')
 
 load_dotenv(dotenv_path=dotenv_path)
 
@@ -49,11 +49,13 @@ def initialize_database():
     conn = connect_db()
     if conn:
         try:
-            # First, drop existing tables to reset the database
-            execute_sql_file(conn, 'src/postgres/drop-db.sql')
-            # Assuming 'execute_sql_file' is a function that takes a connection
-            # and the path to an SQL file, and executes the SQL commands in the file.
-            execute_sql_file(conn, 'src/postgres/schema.sql')
+            if should_update_schema(conn):
+                execute_sql_file(conn, 'src/postgres/schema.sql')
+                print("Schema updated successfully.")
+            else:
+                print("No schema update needed.")
+
+            # Post-initialization tasks
             database = Database()
             users = database.getUsers()
             hobbies = database.getHobbies()
@@ -64,19 +66,59 @@ def initialize_database():
 
             for hobby in hobbies:
                 print(hobby)
-            
-            
+
             print("Database initialized successfully.")
 
             for user_id in users_id:
                 print(user_id[0])
-                
+
         except Exception as e:
             print(f"Error initializing the database: {e}")
         finally:
             conn.close()
     else:
         print("Failed to connect to the database.")
+
+def check_table_exists(conn, table_name):
+    """
+    Check if a table exists in the database.
+    """
+    query = """
+    SELECT EXISTS (
+        SELECT FROM pg_catalog.pg_tables 
+        WHERE  schemaname != 'pg_catalog' AND 
+               schemaname != 'information_schema' AND 
+               tablename  = %s
+    );
+    """
+    with conn.cursor() as cur:
+        cur.execute(query, (table_name,))
+        return cur.fetchone()[0]
+
+
+def should_update_schema(conn):
+    """
+    Determine whether the schema needs to be updated by checking the existence of multiple tables.
+    """
+    tables_to_check = ['users', 'hobbies', 'user_hobbies', 'user_friends', 'groups', 'group_members', 'user_affinities']
+    for table in tables_to_check:
+        if not check_table_exists(conn, table):
+            return True
+    return False
+
+def drop_database():
+    conn = connect_db()
+    if conn:
+        try:
+            execute_sql_file(conn, 'src/postgres/drop-db.sql')
+            print("Database dropped successfully.")
+        except Exception as e:
+            print(f"Error during database drop: {e}")
+        finally:
+            conn.close()
+    else:
+        print("Failed to connect to the database.")
+
 
 # Function to execute SQL file
 def execute_sql_file(conn, filepath):
@@ -90,6 +132,18 @@ def execute_sql_file(conn, filepath):
         conn.rollback()  # Rollback the transaction on error
         print(f"Error executing SQL script: {e}")
         raise e
+
+def affinity_score_central_user():
+    from model.user import User
+    database = Database()
+    central_user_id = User.get_central_user_id()
+    all_users_data = database.getUsers()
+    all_users = [User(user_id=data[0], email=data[1], first_name=data[3], last_name=data[4]) for data in all_users_data]
+
+    for user in all_users:
+        affinity_score = user.get_affinity_score_with_central_user(central_user_id)
+        relationship_status = "buddies" if affinity_score == 100 else "friends" if affinity_score == 50 else "not friends"
+        print(f"{user.first_name}'s relationship status with Central User is {relationship_status} with an affinity score of {affinity_score}.")
 
 class Database():
     """
