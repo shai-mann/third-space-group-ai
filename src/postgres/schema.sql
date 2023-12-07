@@ -112,32 +112,31 @@ INSERT INTO hobbies ("name") VALUES
 -- These were added after the hobbies and the users were added through the extensions PostgresSQL
 -- Replace the UUIDs with the actual UUIDs for each user
 -- Replace the hobby IDs with the actual IDs for each hobby
+-- If DB is reset, the UUIDs will change, so make sure to update them (Unless you assign the values manually)
 
--- Insert User Hobbies for Karim
--- INSERT INTO user_hobbies ("user", hobby) VALUES 
--- ('f690a014-1dd2-4b39-9348-32e0642927db', 1), -- Tennis
--- ('f690a014-1dd2-4b39-9348-32e0642927db', 2); -- Chess
+Insert User Hobbies for Karim
+INSERT INTO user_hobbies ("user", hobby) VALUES 
+('f690a014-1dd2-4b39-9348-32e0642927db', 1), -- Tennis
+('f690a014-1dd2-4b39-9348-32e0642927db', 2); -- Chess
 
--- -- Insert User Hobbies for James (Buddy)
--- INSERT INTO user_hobbies ("user", hobby) VALUES 
--- ('1ab7815e-779e-49ba-b743-9522f2d563e9', 5), -- Reading
--- ('1ab7815e-779e-49ba-b743-9522f2d563e9', 6); -- Cycling
+-- Insert User Hobbies for James (Buddy)
+INSERT INTO user_hobbies ("user", hobby) VALUES 
+('1ab7815e-779e-49ba-b743-9522f2d563e9', 5), -- Reading
+('1ab7815e-779e-49ba-b743-9522f2d563e9', 6); -- Cycling
 
--- -- Insert User Friends (Karim's friends Amy and Bob)
--- INSERT INTO user_friends ("user", friend) VALUES 
--- ('f690a014-1dd2-4b39-9348-32e0642927db', '3670e4ac-720c-4464-8794-666cbc8ee24b'), -- Amy
--- ('f690a014-1dd2-4b39-9348-32e0642927db', '67c96f8e-3254-4e14-ad37-9e748fbf64d7'); -- Bob
+-- Insert User Friends (Karim's friends Amy and Bob)
+INSERT INTO user_friends ("user", friend) VALUES 
+('f690a014-1dd2-4b39-9348-32e0642927db', '3670e4ac-720c-4464-8794-666cbc8ee24b'), -- Amy
+('f690a014-1dd2-4b39-9348-32e0642927db', '67c96f8e-3254-4e14-ad37-9e748fbf64d7'); -- Bob
 
--- -- Insert User Affinities based on the relationships
--- -- Buddy (James) with high affinity score
--- INSERT INTO user_affinities (user_id, related_user_id, affinity_score) VALUES 
--- ('f690a014-1dd2-4b39-9348-32e0642927db', '1ab7815e-779e-49ba-b743-9522f2d563e9', 100); -- James
+-- Insert User Affinities based on the relationships
+-- Buddy (James) with high affinity score
+INSERT INTO user_affinities (user_id, related_user_id, affinity_score) VALUES 
+('f690a014-1dd2-4b39-9348-32e0642927db', '1ab7815e-779e-49ba-b743-9522f2d563e9', 100); -- James
 
--- -- Friends (Amy and Bob) with medium affinity score
--- INSERT INTO user_affinities (user_id, related_user_id, affinity_score) VALUES 
--- ('f690a014-1dd2-4b39-9348-32e0642927db', '3670e4ac-720c-4464-8794-666cbc8ee24b', 50), -- Amy
--- ('f690a014-1dd2-4b39-9348-32e0642927db', '67c96f8e-3254-4e14-ad37-9e748fbf64d7', 50); -- Bob
+-- Friends (Amy and Bob) with medium affinity score
+INSERT INTO user_affinities (user_id, related_user_id, affinity_score) VALUES 
+('f690a014-1dd2-4b39-9348-32e0642927db', '3670e4ac-720c-4464-8794-666cbc8ee24b', 50), -- Amy
+('f690a014-1dd2-4b39-9348-32e0642927db', '67c96f8e-3254-4e14-ad37-9e748fbf64d7', 50); -- Bob
 
--- Assuming non-friends are not inserted since they have an affinity score of 0,
--- which might be the default or can be omitted if not necessary to store.
 

@@ -3,7 +3,7 @@ Stores the model information for Users.
 """
 import sys
 sys.path.insert(0, 'src')
-from db import Database
+from db import Database, execute_query
 
 class User:
     """
@@ -19,6 +19,7 @@ class User:
         self.database = Database()
         self.affinity_score = self.get_affinity_score()
         self.relationship_status = self.get_relationship_status()
+        
     
     def get_affinity_score(self):
         from db import execute_query
@@ -46,7 +47,6 @@ class User:
             return "not friends"
         
     def get_affinity_score_with_central_user(self, central_user_id):
-        from db import execute_query
         """
         Retrieve the affinity score for the user in relation to central user from the database.
         """
@@ -62,10 +62,11 @@ class User:
     
     @classmethod
     def get_central_user_id(cls):
-        from db import Database
         """
         Get Central's user ID from the database using his known unique email.
         """
         database = Database()
         return database.get_user_id_by_email('karim.semaan@example.com')
+    
+
 
