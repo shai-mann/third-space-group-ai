@@ -10,11 +10,22 @@ def initialize_database():
     conn = connect_db()
     if conn:
         try:
+            schema_updated = False  
+
             if should_update_schema(conn):
                 execute_sql_file(conn, 'src/postgres/schema.sql')
                 print("Schema updated successfully.")
+                schema_updated = True 
             else:
-                print("No schema update needed.")
+                print("No Schema update needed.")
+
+            # Check if schema was updated successfully before running data.sql
+            if schema_updated:
+                # Execute data.sql
+                execute_sql_file(conn, 'src/postgres/data.sql')
+                print("Data updated successfully.")
+            else:
+                print("Data update skipped as schema was not updated.")
 
             # Post-initialization tasks
             database = Database()
@@ -39,6 +50,7 @@ def initialize_database():
             conn.close()
     else:
         print("Failed to connect to the database.")
+
 
 
 class Database():
