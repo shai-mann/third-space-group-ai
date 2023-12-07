@@ -4,7 +4,7 @@ from db_utils import drop_database
 
 def main():
     # Drop database if needed. This is useful for testing.
-    # drop_database()
+    drop_database()
     # Initialize database
     initialize_database()
 
