@@ -65,8 +65,9 @@ class User:
         """
         Get Central's user ID from the database using his known unique email.
         """
-        database = Database()
-        return database.get_user_id_by_email('karim.semaan@example.com')
+        # database = Database()
+        # return database.get_user_id_by_email('karim.semaan@example.com')
+        return 0 # Harcoded for now. You will need to modify this to match your database schema and tables.
     
 
 
