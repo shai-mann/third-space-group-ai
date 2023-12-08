@@ -1,13 +1,13 @@
 -- add a default user
 -- Insert Users
-INSERT INTO users (id, first_name) VALUES
-(0, 'Karim'), -- Central user
-(1, 'James'), -- Buddy
-(2, 'Amy'), -- Friend 1
-(3, 'Bob'), -- Friend 2
-(4, 'Alice'), -- Rando 1
-(5, 'Tom'), -- Rando 2
-(6, 'Lisa'); -- Rando 3
+INSERT INTO users (id, first_name, age, buddy_id) VALUES
+(0, 'Karim', 17, 1), -- Central user
+(1, 'James', 21, 0), -- Buddy
+(2, 'Amy', 45, 2), -- Friend 1
+(3, 'Bob', 69, 4), -- Friend 2
+(4, 'Alice', 70, 3), -- Rando 1
+(5, 'Tom', 18, 1), -- Rando 2
+(6, 'Lisa', 19, 5); -- Rando 3
 
 
 -- Insert Hobbies

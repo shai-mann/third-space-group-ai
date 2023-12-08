@@ -25,7 +25,10 @@ This SQL script initializes the database schema for the application. It performs
 create table if not exists users (
     id integer,
     first_name text,
-    primary key (id)
+    age integer,
+    buddy_id integer,
+    primary key (id),
+    FOREIGN KEY (buddy_id) REFERENCES users(id)
 );
 
 create table if not exists hobbies (
