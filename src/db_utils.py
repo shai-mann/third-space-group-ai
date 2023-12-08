@@ -6,7 +6,7 @@ def should_update_schema(conn):
     """
     Determine whether the schema needs to be updated by checking the existence of multiple tables.
     """
-    tables_to_check = ['users', 'hobbies', 'user_hobbies', 'user_friends', 'groups', 'group_members', 'user_affinities']
+    tables_to_check = ['users', 'hobbies', 'user_hobbies', 'friends', 'groups', 'group_members', 'affinities']
     for table in tables_to_check:
         if not check_table_exists(conn, table):
             return True
