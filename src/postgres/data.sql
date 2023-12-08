@@ -32,7 +32,8 @@ INSERT INTO user_hobbies ("user", hobby) VALUES
 -- Insert User Hobbies for James (Buddy)
 INSERT INTO user_hobbies ("user", hobby) VALUES 
 (1, 5), -- Reading
-(1, 6); -- Cycling
+(1, 6), -- Cycling
+(1, 1); -- Tennis
 
 -- Insert User Friends (Karim's friends Amy and Bob)
 INSERT INTO user_friends ("user", friend) VALUES 
