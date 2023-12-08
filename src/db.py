@@ -58,6 +58,34 @@ def initialize_database():
         print("Failed to connect to the database.")
 
 
+def assign_affinities():
+    conn = connect_db()
+    if conn:
+        db = Database()
+        open("src/postgres/affinities.sql", "w").close()
+        file = open("src/postgres/affinities.sql", "a")
+        file.write("INSERT INTO affinities (\"user\", user_other, affinity_score) VALUES\n")
+        ids = db.getUsersIds()
+        size = len(ids)
+        for (index, (id)) in enumerate(ids):
+            [features] = db.get_user_features(id[0])
+            # (age difference, are buddies, are friends, # friends in common, # hobbies in common, # groups in common)
+            print(
+                f"""Age difference: {features[0]}
+Buddy? {"YES" if features[1] == 1 else "NO"}
+Friends? {"YES" if features[2] == 1 else "NO"}
+Number of Shared Friends: {features[3]}
+Number of Shared Hobbies: {features[4]}
+Number of Shared Groups: {features[5]}
+"""
+            )
+            affinity = input("Please give an affinity score: ")
+            ending_char = "," if index < size else ";"
+            file.write(f"({0}, {id[0]}, {affinity}){ending_char}\n")
+            print("================================")
+        
+        file.close()
+
 
 class Database():
     """

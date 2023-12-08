@@ -1,7 +1,6 @@
 from db_connection import connect_db, execute_sql_file, check_table_exists
 
 
-
 def should_update_schema(conn):
     """
     Determine whether the schema needs to be updated by checking the existence of multiple tables.
@@ -24,6 +23,4 @@ def drop_database():
             conn.close()
     else:
         print("Failed to connect to the database.")
-
-
 
