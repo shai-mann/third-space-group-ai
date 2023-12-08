@@ -21,11 +21,16 @@ def initialize_database():
 
             # Check if schema was updated successfully before running data.sql
             if schema_updated:
+
                 # Execute data.sql
                 execute_sql_file(conn, 'src/postgres/data.sql')
                 print("Data updated successfully.")
+
+                # Execute get_user_info.sql to create the function in the database
+                execute_sql_file(conn, 'src/postgres/get_user_info.sql')
+                print("get_user_info function created successfully.")
             else:
-                print("Data update skipped as schema was not updated.")
+                print("Data and Function update skipped as schema was not updated.")
 
             # Post-initialization tasks
             database = Database()
@@ -42,7 +47,8 @@ def initialize_database():
             print("Database initialized successfully.")
 
             for user_id in users_id:
-                print(user_id[0])
+                user_info = database.get_user_info(user_id[0])
+                print(f"Info for user {user_id[0]}: {user_info}")
 
         except Exception as e:
             print(f"Error initializing the database: {e}")
@@ -116,12 +122,16 @@ class Database():
         else:
             print("Invalid relationship type provided.")
         
-    # Inside the Database class in db.py
-
     def get_user_id_by_email(self, email):
         query = "SELECT id FROM users WHERE email = %s;"
         result = execute_query(query, (email,))
         return result[0][0] if result else None
+    
+    def get_user_info(self, user_id):
+        query = "SELECT * FROM get_user_info(%s);"
+        return execute_query(query, (user_id,))
+    
+
     
 
 
