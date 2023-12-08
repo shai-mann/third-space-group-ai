@@ -1,6 +1,9 @@
 -- DROPS ALL DATA IN THE DATABASE
 -- This file exists in case a dev wants to reset their database
 
+-- Drop the function first before dropping the tables
+DROP FUNCTION IF EXISTS get_user_features(integer) CASCADE;
+
 -- Drop tables in the reverse order of their dependencies
 drop table if exists group_members CASCADE;
 drop table if exists groups CASCADE;
