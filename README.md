@@ -9,8 +9,8 @@ The models package stores database models, for internal use in the segmentation 
 ### Weights
 The weights package stores files related to the neural network, which is trained to suggest weights.
 
-### db.py, segment.py
-db.py handles the interfacing with the database, and segment.py handles the Ford-Fulkerson-based user segmenting algorithm.
+### db.py
+db.py handles the interfacing with the database
 
 ### Postgres
 The postgres package stores SQL scripts to initialize or deconstruct the database.
