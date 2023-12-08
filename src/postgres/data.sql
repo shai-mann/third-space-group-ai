@@ -1,6 +1,6 @@
 -- add a default user
 -- Insert Users
-INSERT INTO users (id, first_name, age, buddy_id) VALUES
+INSERT INTO users (id, "name", age, buddy) VALUES
 (0, 'Karim', 17, 1), -- Central user
 (1, 'James', 21, 0), -- Buddy
 (2, 'Amy', 45, 2), -- Friend 1
@@ -36,18 +36,18 @@ INSERT INTO user_hobbies ("user", hobby) VALUES
 (1, 1); -- Tennis
 
 -- Insert User Friends (Karim's friends Amy and Bob)
-INSERT INTO user_friends ("user", friend) VALUES 
+INSERT INTO friends ("user", friend) VALUES 
 (0, 2), -- Amy
 (0, 3); -- Bob
 
 -- Insert User Affinities based on the relationships
 -- Buddy (James) with high affinity score
-INSERT INTO user_affinities (user_id, related_user_id, affinity_score) VALUES 
-(0, 1, 100); -- James
+INSERT INTO affinities (id, "user",user_other, affinity_score) VALUES 
+(0, 0, 1, 100); -- James
 
--- Friends (Amy and Bob) with medium affinity score
-INSERT INTO user_affinities (user_id, related_user_id, affinity_score) VALUES 
-(0, 2, 50), -- Amy
-(0, 3, 50); -- Bob
+
+INSERT INTO affinities (id, "user",user_other, affinity_score) VALUES 
+(1, 0, 2, 50), -- Amy
+(2, 0, 3, 50); -- Bob
 
 

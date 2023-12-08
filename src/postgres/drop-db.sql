@@ -9,8 +9,8 @@ drop table if exists group_members CASCADE;
 drop table if exists groups CASCADE;
 
 drop table if exists user_hobbies CASCADE;
-drop table if exists user_friends CASCADE;
-drop table if exists user_affinities CASCADE;
+drop table if exists friends CASCADE;
+drop table if exists affinities CASCADE;
 
 -- Now you can safely drop the users table
 drop table if exists users CASCADE;

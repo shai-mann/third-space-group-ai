@@ -14,20 +14,20 @@ BEGIN
     WHERE u.id = user_id AND central.id = 0;
 
     -- Check if the user is a buddy with the central user and cast to integer
-    SELECT (CASE WHEN u.buddy_id = 0 THEN 1 ELSE 0 END) INTO is_buddy
+    SELECT (CASE WHEN u.buddy = 0 THEN 1 ELSE 0 END) INTO is_buddy
     FROM users u
     WHERE u.id = user_id;
 
     -- Check if the user is a friend with the central user and cast to integer
     SELECT (CASE WHEN EXISTS (
-        SELECT 1 FROM user_friends uf WHERE (uf."user" = user_id AND uf.friend = 0) OR (uf."user" = 0 AND uf.friend = user_id)
+        SELECT 1 FROM friends f WHERE (f."user" = user_id AND f.friend = 0) OR (f."user" = 0 AND f.friend = user_id)
     ) THEN 1 ELSE 0 END) INTO is_friend;
 
     -- Calculate the number of common friends with the central user
-    SELECT COUNT(DISTINCT uf1.friend) INTO common_friends_count
-    FROM user_friends uf1
-    JOIN user_friends uf2 ON uf1.friend = uf2.friend
-    WHERE (uf1."user" = user_id AND uf2."user" = 0) OR (uf1."user" = 0 AND uf2."user" = user_id);
+    SELECT COUNT(DISTINCT f1.friend) INTO common_friends_count
+    FROM friends f1
+    JOIN friends f2 ON f1.friend = f2.friend
+    WHERE (f1."user" = user_id AND f2."user" = 0) OR (f1."user" = 0 AND f2."user" = user_id);
 
     -- Get the count of common hobbies with the central user
     SELECT COUNT(DISTINCT uh.hobby) INTO common_hobbies_count
