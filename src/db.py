@@ -27,7 +27,7 @@ def initialize_database():
                 print("Data updated successfully.")
 
                 # Execute get_user_info.sql to create the function in the database
-                execute_sql_file(conn, 'src/postgres/get_user_info.sql')
+                execute_sql_file(conn, 'src/postgres/get_user_features.sql')
                 print("get_user_info function created successfully.")
             else:
                 print("Data and Function update skipped as schema was not updated.")
@@ -47,8 +47,8 @@ def initialize_database():
             print("Database initialized successfully.")
 
             for user_id in users_id:
-                user_info = database.get_user_info(user_id[0])
-                print(f"Info for user {user_id[0]}: {user_info}")
+                user_info = database.get_user_features(user_id[0])
+                print(f"Info for user {user_id[0]} based on central user: {user_info}")
 
         except Exception as e:
             print(f"Error initializing the database: {e}")
@@ -127,8 +127,8 @@ class Database():
         result = execute_query(query, (email,))
         return result[0][0] if result else None
     
-    def get_user_info(self, user_id):
-        query = "SELECT * FROM get_user_info(%s);"
+    def get_user_features(self, user_id):
+        query = "SELECT * FROM get_user_features(%s);"
         return execute_query(query, (user_id,))
     
 
