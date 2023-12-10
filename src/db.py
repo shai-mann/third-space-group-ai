@@ -21,7 +21,6 @@ def initialize_database():
 
             # Check if schema was updated successfully before running data.sql
             if schema_updated:
-
                 # Execute data.sql
                 execute_sql_file(conn, 'src/postgres/data.sql')
                 print("Data updated successfully.")
@@ -34,21 +33,17 @@ def initialize_database():
 
             # Post-initialization tasks
             database = Database()
-            users = database.getUsers()
-            hobbies = database.getHobbies()
             users_id = database.getUsersIds()
-
-            for user in users:
-                print(user)
-
-            for hobby in hobbies:
-                print(hobby)
 
             print("Database initialized successfully.")
 
-            for user_id in users_id:
-                user_info = database.get_user_features(user_id[0])
-                print(f"Info for user {user_id[0]} based on central user: {user_info}")
+            central_user_id = 0  # Set this to the ID of your central user
+
+            for user_id_tuple in users_id:
+                user_id = user_id_tuple[0]
+                user_info = database.get_user_features(user_id, central_user_id)
+                print(f"Info for user {user_id} based on central user: {user_info}")
+
 
         except Exception as e:
             print(f"Error initializing the database: {e}")
@@ -158,10 +153,10 @@ class Database():
         result = execute_query(query, (email,))
         return result[0][0] if result else None
     
-    def get_user_features(self, user_id):
-        query = "SELECT * FROM get_user_features(%s);"
-        return execute_query(query, (user_id,))
-    
+    def get_user_features(self, user_id, central_user_id):
+        query = "SELECT * FROM get_user_features(%s, %s);"
+        return execute_query(query, (user_id, central_user_id))
+
 
     
 
