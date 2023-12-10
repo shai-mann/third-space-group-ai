@@ -68,10 +68,13 @@ def assign_affinities():
         ids = db.getUsersIds()
         size = len(ids)
         for (index, (id)) in enumerate(ids):
+            if (id[0] == 0):
+                continue
             [features] = db.get_user_features(id[0])
             # (age difference, are buddies, are friends, # friends in common, # hobbies in common, # groups in common)
             print(
-                f"""Age difference: {features[0]}
+                f"""User {id[0]}
+Age difference: {features[0]}
 Buddy? {"YES" if features[1] == 1 else "NO"}
 Friends? {"YES" if features[2] == 1 else "NO"}
 Number of Shared Friends: {features[3]}
