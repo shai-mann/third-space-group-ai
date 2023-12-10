@@ -24,25 +24,26 @@ def initialize_database():
                 # Execute data.sql
                 execute_sql_file(conn, 'src/postgres/data.sql')
                 print("Data updated successfully.")
+
+                # Execute get_user_info.sql to create the function in the database
+                execute_sql_file(conn, 'src/postgres/get_user_features.sql')
+                print("get_user_info function created successfully.")
             else:
-                print("Data update skipped as schema was not updated.")
+                print("Data and Function update skipped as schema was not updated.")
 
             # Post-initialization tasks
             database = Database()
-            users = database.getUsers()
-            hobbies = database.getHobbies()
             users_id = database.getUsersIds()
-
-            for user in users:
-                print(user)
-
-            for hobby in hobbies:
-                print(hobby)
 
             print("Database initialized successfully.")
 
-            for user_id in users_id:
-                print(user_id[0])
+            central_user_id = 0  # Set this to the ID of your central user
+
+            for user_id_tuple in users_id:
+                user_id = user_id_tuple[0]
+                user_info = database.get_user_features(user_id, central_user_id)
+                print(f"Info for user {user_id} based on central user: {user_info}")
+
 
         except Exception as e:
             print(f"Error initializing the database: {e}")
@@ -51,6 +52,37 @@ def initialize_database():
     else:
         print("Failed to connect to the database.")
 
+
+def assign_affinities():
+    conn = connect_db()
+    if conn:
+        db = Database()
+        open("src/postgres/affinities.sql", "w").close()
+        file = open("src/postgres/affinities.sql", "a")
+        file.write("INSERT INTO affinities (\"user\", user_other, affinity_score) VALUES\n")
+        ids = db.getUsersIds()
+        size = len(ids)
+        for (index, (id)) in enumerate(ids):
+            if (id[0] == 0):
+                continue
+            [features] = db.get_user_features(id[0])
+            # (age difference, are buddies, are friends, # friends in common, # hobbies in common, # groups in common)
+            print(
+                f"""User {id[0]}
+Age difference: {features[0]}
+Buddy? {"YES" if features[1] == 1 else "NO"}
+Friends? {"YES" if features[2] == 1 else "NO"}
+Number of Shared Friends: {features[3]}
+Number of Shared Hobbies: {features[4]}
+Number of Shared Groups: {features[5]}
+"""
+            )
+            affinity = input("Please give an affinity score: ")
+            ending_char = "," if index < size else ";"
+            file.write(f"({0}, {id[0]}, {affinity}){ending_char}\n")
+            print("================================")
+        
+        file.close()
 
 
 class Database():
@@ -116,12 +148,16 @@ class Database():
         else:
             print("Invalid relationship type provided.")
         
-    # Inside the Database class in db.py
-
     def get_user_id_by_email(self, email):
         query = "SELECT id FROM users WHERE email = %s;"
         result = execute_query(query, (email,))
         return result[0][0] if result else None
+    
+    def get_user_features(self, user_id, central_user_id):
+        query = "SELECT * FROM get_user_features(%s, %s);"
+        return execute_query(query, (user_id, central_user_id))
+
+
     
 
 
