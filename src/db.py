@@ -4,6 +4,7 @@ This is where database interface code goes
 
 from db_connection import execute_query, connect_db, execute_sql_file
 from db_utils import should_update_schema
+import random
 
 
 def initialize_database():
@@ -63,12 +64,12 @@ def assign_affinities():
         ids = db.getUsersIds()
         size = len(ids)
         for (index, (id)) in enumerate(ids):
-            if (id[0] == 0):
+            if (id == 0):
                 continue
-            [features] = db.get_user_features(id[0])
+            [features] = db.get_user_features(id, 0)
             # (age difference, are buddies, are friends, # friends in common, # hobbies in common, # groups in common)
             print(
-                f"""User {id[0]}
+                f"""User {id}
 Age difference: {features[0]}
 Buddy? {"YES" if features[1] == 1 else "NO"}
 Friends? {"YES" if features[2] == 1 else "NO"}
@@ -77,13 +78,42 @@ Number of Shared Hobbies: {features[4]}
 Number of Shared Groups: {features[5]}
 """
             )
-            affinity = input("Please give an affinity score: ")
+            # Automatically determine the affinity score
+            if features[1] == 1:  # Buddies
+                affinity = 100
+            elif features[2] == 1:  # Friends but not buddies
+                affinity = 50
+            else:  # Neither buddies nor friends
+                affinity = 0
             ending_char = "," if index < size else ";"
             file.write(f"({0}, {id[0]}, {affinity}){ending_char}\n")
             print("================================")
-        
-        file.close()
 
+        print("Affinities assigned successfully")
+    else:
+        print("Failed to assign affinities.")
+        file.close()
+    
+def random_affinities():
+    conn = connect_db()
+    if conn:
+        db = Database()
+        with open("src/postgres/random_affinities.sql", "w") as file:
+            file.write("INSERT INTO affinities (\"user\", user_other, affinity_score) VALUES\n")
+            ids = db.getUsersIds()
+            for (index, (id,)) in enumerate(ids):
+                if id == 0:
+                    continue
+                # Assign a random affinity score
+                affinity = random.choice([0, 50, 100])
+                ending_char = "," if index < len(ids) - 1 else ";"
+                file.write(f"({0}, {id}, {affinity}){ending_char}\n")
+                print(f"User {id}: Randomly assigned affinity score {affinity}")
+                print("================================")
+
+            print("Random affinities written to SQL file.")
+    else:
+        print("Failed to connect to the database.")
 
 class Database():
     """
