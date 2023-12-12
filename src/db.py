@@ -4,6 +4,9 @@ This is where database interface code goes
 
 from db_connection import execute_query, connect_db, execute_sql_file
 from db_utils import should_update_schema
+import random
+import numpy as np
+import matplotlib.pyplot as plt
 
 
 def initialize_database():
@@ -15,6 +18,10 @@ def initialize_database():
             if should_update_schema(conn):
                 execute_sql_file(conn, 'src/postgres/schema.sql')
                 print("Schema updated successfully.")
+
+                execute_sql_file(conn, 'src/postgres/get_user_features.sql')
+                print("get_user_info function created successfully.")
+
                 schema_updated = True 
             else:
                 print("No Schema update needed.")
@@ -28,6 +35,12 @@ def initialize_database():
                 # Execute get_user_info.sql to create the function in the database
                 execute_sql_file(conn, 'src/postgres/get_user_features.sql')
                 print("get_user_info function created successfully.")
+
+                # execute_sql_file(conn, 'src/postgres/random_affinities.sql')
+                # print("Random affinities assigned successfully.")
+
+                execute_sql_file(conn, 'src/postgres/affinities.sql')
+                print("Affinities assigned successfully.")
             else:
                 print("Data and Function update skipped as schema was not updated.")
 
@@ -63,12 +76,12 @@ def assign_affinities():
         ids = db.getUsersIds()
         size = len(ids)
         for (index, (id)) in enumerate(ids):
-            if (id[0] == 0):
+            if (id == 0):
                 continue
-            [features] = db.get_user_features(id[0])
+            [features] = db.get_user_features(id, 0)
             # (age difference, are buddies, are friends, # friends in common, # hobbies in common, # groups in common)
             print(
-                f"""User {id[0]}
+                f"""User {id}
 Age difference: {features[0]}
 Buddy? {"YES" if features[1] == 1 else "NO"}
 Friends? {"YES" if features[2] == 1 else "NO"}
@@ -77,13 +90,42 @@ Number of Shared Hobbies: {features[4]}
 Number of Shared Groups: {features[5]}
 """
             )
-            affinity = input("Please give an affinity score: ")
+            # Automatically determine the affinity score
+            if features[1] == 1:  # Buddies
+                affinity = 100
+            elif features[2] == 1:  # Friends but not buddies
+                affinity = 50
+            else:  # Neither buddies nor friends
+                affinity = 0
             ending_char = "," if index < size else ";"
             file.write(f"({0}, {id[0]}, {affinity}){ending_char}\n")
             print("================================")
-        
-        file.close()
 
+        print("Affinities assigned successfully")
+    else:
+        print("Failed to assign affinities.")
+        file.close()
+    
+def random_affinities():
+    conn = connect_db()
+    if conn:
+        db = Database()
+        with open("src/postgres/random_affinities.sql", "w") as file:
+            file.write("INSERT INTO affinities (\"user\", user_other, affinity_score) VALUES\n")
+            ids = db.getUsersIds()
+            for (index, (id,)) in enumerate(ids):
+                if id == 0:
+                    continue
+                # Assign a random affinity score
+                affinity = random.choice([0, 50, 100])
+                ending_char = "," if index < len(ids) - 1 else ";"
+                file.write(f"({0}, {id}, {affinity}){ending_char}\n")
+                print(f"User {id}: Randomly assigned affinity score {affinity}")
+                print("================================")
+
+            print("Random affinities written to SQL file.")
+    else:
+        print("Failed to connect to the database.")
 
 class Database():
     """
@@ -156,6 +198,98 @@ class Database():
     def get_user_features(self, user_id, central_user_id):
         query = "SELECT * FROM get_user_features(%s, %s);"
         return execute_query(query, (user_id, central_user_id))
+    
+    def prepare_training_data(self):
+        # Fetch all user IDs
+        user_ids = self.getUsersIds()
+
+        # Initialize containers for features (x_train) and labels (y_train)
+        x_train = []
+        y_train = []
+
+        # Central user ID - adjust as needed
+        central_user_id = 0
+
+        # Fetch features and affinities for each user
+        for user_id_tuple in user_ids:
+            user_id = user_id_tuple[0]
+            if user_id == central_user_id:
+                continue
+
+            # Fetch user features
+            features = self.get_user_features(user_id, central_user_id)
+
+            # Fetch affinity score for the user
+            affinity_query = "SELECT affinity_score FROM affinities WHERE \"user\" = %s AND user_other = %s;"
+            affinity = execute_query(affinity_query, (central_user_id, user_id))
+            affinity_score = affinity[0][0] if affinity else 0
+
+            # Add to training data
+            x_train.append(features[0])  # Assuming features are returned as a list in a list
+            y_train.append(affinity_score)
+
+        return np.array(x_train), np.array(y_train)
+
+    def get_test_data(self):
+        # Fetch all user IDs
+        user_ids = self.getUsersIds()
+
+        # Initialize containers for features (x_test) and labels (y_test)
+        x_test = []
+        y_test = []
+
+        # Central user ID - adjust as needed
+        central_user_id = 0
+
+        # Fetch features and affinities for each user for testing
+        for user_id_tuple in user_ids:
+            user_id = user_id_tuple[0]
+            if user_id == central_user_id:
+                continue
+
+            # Fetch user features
+            features = self.get_user_features(user_id, central_user_id)
+
+            # Fetch affinity score for the user
+            affinity_query = "SELECT affinity_score FROM affinities WHERE \"user\" = %s AND user_other = %s;"
+            affinity = execute_query(affinity_query, (central_user_id, user_id))
+            affinity_score = affinity[0][0] if affinity else 0
+
+            # Add to test data
+            x_test.append(features[0])  # Assuming features are returned as a list in a list
+            y_test.append(affinity_score)
+
+        return np.array(x_test), np.array(y_test)
+    
+    def plot_results(self, history):
+        """
+        Plots the training accuracy and loss values.
+
+        :param history: A History object returned from the fit method of a Keras model.
+        """
+        plt.figure(figsize=(12, 6))
+
+        # Plot training & validation accuracy values
+        plt.subplot(1, 2, 1)
+        plt.plot(history.history['accuracy'])
+        plt.plot(history.history['val_accuracy'])
+        plt.title('Model accuracy')
+        plt.ylabel('Accuracy')
+        plt.xlabel('Epoch')
+        plt.legend(['Train', 'Test'], loc='upper left')
+
+        # Plot training & validation loss values
+        plt.subplot(1, 2, 2)
+        plt.plot(history.history['loss'])
+        plt.plot(history.history['val_loss'])
+        plt.title('Model loss')
+        plt.ylabel('Loss')
+        plt.xlabel('Epoch')
+        plt.legend(['Train', 'Test'], loc='upper left')
+
+        plt.show()
+    
+
 
 
     
