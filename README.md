@@ -3,8 +3,8 @@ This project is to construct a neural network that can handle affinity generatio
 
 ## Project Structure:
 
-### network.py, model.h5
-network.py stores the code to train and use the neural network to make affinity predictions. The model.h5 file contains the stored information of the fully trained model (300 epochs).
+### network.py, model.keras
+network.py stores the code to train and use the neural network to make affinity predictions. The model.keras file contains the stored information of the fully trained model (300 epochs).
 
 ### db.py, db_utils.py, db_connection.py
 db.py handles the interfacing with the database, and uses the other two as helper files.
