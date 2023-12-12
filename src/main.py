@@ -1,9 +1,9 @@
 from db import initialize_database, assign_affinities, random_affinities
 from db_utils import drop_database
-from weights.network import run_training_and_plot_results
+from network import run_training_and_plot_results
 
 def main():
-    # Drop database if needed. This is useful for testing.
+    # Drop database if needed.
     # drop_database()
     # Initialize database
     # initialize_database()

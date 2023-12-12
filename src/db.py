@@ -1,7 +1,3 @@
-"""
-This is where database interface code goes
-"""
-
 from db_connection import execute_query, connect_db, execute_sql_file
 from db_utils import should_update_schema
 import random
