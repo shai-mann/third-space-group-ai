@@ -22,8 +22,6 @@ def initialize_database():
                 execute_sql_file(conn, 'src/postgres/get_user_features.sql')
                 print("get_user_info function created successfully.")
 
-                execute_sql_file(conn, 'src/postgres/random_affinities.sql')
-                print("Random affinities assigned successfully.")
                 schema_updated = True 
             else:
                 print("No Schema update needed.")
@@ -38,8 +36,11 @@ def initialize_database():
                 execute_sql_file(conn, 'src/postgres/get_user_features.sql')
                 print("get_user_info function created successfully.")
 
-                execute_sql_file(conn, 'src/postgres/random_affinities.sql')
-                print("Random affinities assigned successfully.")
+                # execute_sql_file(conn, 'src/postgres/random_affinities.sql')
+                # print("Random affinities assigned successfully.")
+
+                execute_sql_file(conn, 'src/postgres/affinities.sql')
+                print("Affinities assigned successfully.")
             else:
                 print("Data and Function update skipped as schema was not updated.")
 
