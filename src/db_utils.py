@@ -24,3 +24,5 @@ def drop_database():
     else:
         print("Failed to connect to the database.")
 
+
+

@@ -5,6 +5,8 @@ This is where database interface code goes
 from db_connection import execute_query, connect_db, execute_sql_file
 from db_utils import should_update_schema
 import random
+import numpy as np
+import matplotlib.pyplot as plt
 
 
 def initialize_database():
@@ -16,6 +18,12 @@ def initialize_database():
             if should_update_schema(conn):
                 execute_sql_file(conn, 'src/postgres/schema.sql')
                 print("Schema updated successfully.")
+
+                execute_sql_file(conn, 'src/postgres/get_user_features.sql')
+                print("get_user_info function created successfully.")
+
+                execute_sql_file(conn, 'src/postgres/random_affinities.sql')
+                print("Random affinities assigned successfully.")
                 schema_updated = True 
             else:
                 print("No Schema update needed.")
@@ -29,6 +37,9 @@ def initialize_database():
                 # Execute get_user_info.sql to create the function in the database
                 execute_sql_file(conn, 'src/postgres/get_user_features.sql')
                 print("get_user_info function created successfully.")
+
+                execute_sql_file(conn, 'src/postgres/random_affinities.sql')
+                print("Random affinities assigned successfully.")
             else:
                 print("Data and Function update skipped as schema was not updated.")
 
@@ -186,6 +197,98 @@ class Database():
     def get_user_features(self, user_id, central_user_id):
         query = "SELECT * FROM get_user_features(%s, %s);"
         return execute_query(query, (user_id, central_user_id))
+    
+    def prepare_training_data(self):
+        # Fetch all user IDs
+        user_ids = self.getUsersIds()
+
+        # Initialize containers for features (x_train) and labels (y_train)
+        x_train = []
+        y_train = []
+
+        # Central user ID - adjust as needed
+        central_user_id = 0
+
+        # Fetch features and affinities for each user
+        for user_id_tuple in user_ids:
+            user_id = user_id_tuple[0]
+            if user_id == central_user_id:
+                continue
+
+            # Fetch user features
+            features = self.get_user_features(user_id, central_user_id)
+
+            # Fetch affinity score for the user
+            affinity_query = "SELECT affinity_score FROM affinities WHERE \"user\" = %s AND user_other = %s;"
+            affinity = execute_query(affinity_query, (central_user_id, user_id))
+            affinity_score = affinity[0][0] if affinity else 0
+
+            # Add to training data
+            x_train.append(features[0])  # Assuming features are returned as a list in a list
+            y_train.append(affinity_score)
+
+        return np.array(x_train), np.array(y_train)
+
+    def get_test_data(self):
+        # Fetch all user IDs
+        user_ids = self.getUsersIds()
+
+        # Initialize containers for features (x_test) and labels (y_test)
+        x_test = []
+        y_test = []
+
+        # Central user ID - adjust as needed
+        central_user_id = 0
+
+        # Fetch features and affinities for each user for testing
+        for user_id_tuple in user_ids:
+            user_id = user_id_tuple[0]
+            if user_id == central_user_id:
+                continue
+
+            # Fetch user features
+            features = self.get_user_features(user_id, central_user_id)
+
+            # Fetch affinity score for the user
+            affinity_query = "SELECT affinity_score FROM affinities WHERE \"user\" = %s AND user_other = %s;"
+            affinity = execute_query(affinity_query, (central_user_id, user_id))
+            affinity_score = affinity[0][0] if affinity else 0
+
+            # Add to test data
+            x_test.append(features[0])  # Assuming features are returned as a list in a list
+            y_test.append(affinity_score)
+
+        return np.array(x_test), np.array(y_test)
+    
+    def plot_results(self, history):
+        """
+        Plots the training accuracy and loss values.
+
+        :param history: A History object returned from the fit method of a Keras model.
+        """
+        plt.figure(figsize=(12, 6))
+
+        # Plot training & validation accuracy values
+        plt.subplot(1, 2, 1)
+        plt.plot(history.history['accuracy'])
+        plt.plot(history.history['val_accuracy'])
+        plt.title('Model accuracy')
+        plt.ylabel('Accuracy')
+        plt.xlabel('Epoch')
+        plt.legend(['Train', 'Test'], loc='upper left')
+
+        # Plot training & validation loss values
+        plt.subplot(1, 2, 2)
+        plt.plot(history.history['loss'])
+        plt.plot(history.history['val_loss'])
+        plt.title('Model loss')
+        plt.ylabel('Loss')
+        plt.xlabel('Epoch')
+        plt.legend(['Train', 'Test'], loc='upper left')
+
+        plt.show()
+    
+
 
 
     
