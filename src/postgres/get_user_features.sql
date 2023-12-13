@@ -1,3 +1,4 @@
+-- Handles the complicated database query to extract the features of a user.
 CREATE OR REPLACE FUNCTION get_user_features(user_id INTEGER, central_user_id INTEGER)
 RETURNS TABLE (
     age_difference INTEGER,

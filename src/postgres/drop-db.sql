@@ -1,5 +1,5 @@
 -- DROPS ALL DATA IN THE DATABASE
--- This file exists in case a dev wants to reset their database
+-- This file exists in case a developer wants to reset their database
 
 -- Drop the function first before dropping the tables
 DROP FUNCTION IF EXISTS get_user_features(integer) CASCADE;
