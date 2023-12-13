@@ -7,7 +7,7 @@ from db_utils import should_update_schema
 import random
 import numpy as np
 import matplotlib.pyplot as plt
-
+from sklearn.model_selection import train_test_split
 
 def initialize_database():
     conn = connect_db()
@@ -199,91 +199,67 @@ class Database():
         query = "SELECT * FROM get_user_features(%s, %s);"
         return execute_query(query, (user_id, central_user_id))
     
-    def prepare_training_data(self):
-        # Fetch all user IDs
-        user_ids = self.getUsersIds()
+    def prepare_data(self, test_size=0.1):
+            """
+            Prepares the data for training and testing.
+            :param test_size: The proportion of data to be used as test data.
+            :return: x_train, y_train, x_test, y_test
+            """
+            user_ids = self.getUsersIds()
 
-        # Initialize containers for features (x_train) and labels (y_train)
-        x_train = []
-        y_train = []
+            # Initialize containers for features and labels
+            x_data = []
+            y_data = []
 
-        # Central user ID - adjust as needed
-        central_user_id = 0
+            # Central user ID - adjust as needed
+            central_user_id = 0
 
-        # Fetch features and affinities for each user
-        for user_id_tuple in user_ids:
-            user_id = user_id_tuple[0]
-            if user_id == central_user_id:
-                continue
+            # Fetch features and affinities for each user
+            for user_id_tuple in user_ids:
+                user_id = user_id_tuple[0]
+                if user_id == central_user_id:
+                    continue
 
-            # Fetch user features
-            features = self.get_user_features(user_id, central_user_id)
+                # Fetch user features
+                features = self.get_user_features(user_id, central_user_id)
 
-            # Fetch affinity score for the user
-            affinity_query = "SELECT affinity_score FROM affinities WHERE \"user\" = %s AND user_other = %s;"
-            affinity = execute_query(affinity_query, (central_user_id, user_id))
-            affinity_score = affinity[0][0] if affinity else 0
+                # Fetch affinity score for the user
+                affinity_query = "SELECT affinity_score FROM affinities WHERE \"user\" = %s AND user_other = %s;"
+                affinity = execute_query(affinity_query, (central_user_id, user_id))
+                affinity_score = affinity[0][0] if affinity else 0
 
-            # Add to training data
-            x_train.append(features[0])  # Assuming features are returned as a list in a list
-            y_train.append(affinity_score)
+                # Add to data
+                x_data.append(features[0])  # Assuming features are returned as a list in a list
+                y_data.append([affinity_score])
 
-        return np.array(x_train), np.array(y_train)
+            # Split data into training and test sets
+            x_train, x_test, y_train, y_test = train_test_split(x_data, y_data, test_size=test_size, random_state=42)
 
-    def get_test_data(self):
-        # Fetch all user IDs
-        user_ids = self.getUsersIds()
+            return np.array(x_train), np.array(y_train), np.array(x_test), np.array(y_test)
 
-        # Initialize containers for features (x_test) and labels (y_test)
-        x_test = []
-        y_test = []
-
-        # Central user ID - adjust as needed
-        central_user_id = 0
-
-        # Fetch features and affinities for each user for testing
-        for user_id_tuple in user_ids:
-            user_id = user_id_tuple[0]
-            if user_id == central_user_id:
-                continue
-
-            # Fetch user features
-            features = self.get_user_features(user_id, central_user_id)
-
-            # Fetch affinity score for the user
-            affinity_query = "SELECT affinity_score FROM affinities WHERE \"user\" = %s AND user_other = %s;"
-            affinity = execute_query(affinity_query, (central_user_id, user_id))
-            affinity_score = affinity[0][0] if affinity else 0
-
-            # Add to test data
-            x_test.append(features[0])  # Assuming features are returned as a list in a list
-            y_test.append(affinity_score)
-
-        return np.array(x_test), np.array(y_test)
-    
     def plot_results(self, history):
         """
-        Plots the training accuracy and loss values.
+        Plots the training Mean Absolute Error (MAE) and Mean Squared Error (MSE) values.
 
         :param history: A History object returned from the fit method of a Keras model.
         """
         plt.figure(figsize=(12, 6))
 
-        # Plot training & validation accuracy values
+        # Plot training & validation MAE values
         plt.subplot(1, 2, 1)
-        plt.plot(history.history['accuracy'])
-        plt.plot(history.history['val_accuracy'])
-        plt.title('Model accuracy')
-        plt.ylabel('Accuracy')
+        plt.plot(history.history['mae'])
+        plt.plot(history.history['val_mae'])
+        plt.title('Model MAE')
+        plt.ylabel('MAE')
         plt.xlabel('Epoch')
         plt.legend(['Train', 'Test'], loc='upper left')
 
-        # Plot training & validation loss values
+        # Plot training & validation MSE values
         plt.subplot(1, 2, 2)
         plt.plot(history.history['loss'])
         plt.plot(history.history['val_loss'])
-        plt.title('Model loss')
-        plt.ylabel('Loss')
+        plt.title('Model MSE')
+        plt.ylabel('MSE')
         plt.xlabel('Epoch')
         plt.legend(['Train', 'Test'], loc='upper left')
 
